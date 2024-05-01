@@ -41,7 +41,7 @@
 
 int initialization();
 int connection( int internet_socket );
-void execution( int internet_socket , long int RandomNumber);
+void execution( int internet_socket , int RandomNumber);
 void cleanup( int internet_socket, int client_internet_socket );
 
 
@@ -60,9 +60,12 @@ int main( int argc, char * argv[] )
 	int internet_socket = initialization();
 
 	int client_internet_socket = connection( internet_socket );
-	
+
 	srand((unsigned)time(NULL));
-	long int RandomNumber = rand()%1000000;
+	int RandomNumber = rand();
+	RandomNumber <<= 15;
+	RandomNumber ^= rand();
+	RandomNumber %= 1000001;
 	
 	execution( client_internet_socket , RandomNumber);
 
@@ -129,7 +132,6 @@ int initialization()
 	}
 
 	freeaddrinfo( internet_address_result );
-
 	if( internet_socket == -1 )
 	{
 		fprintf( stderr, "socket: no valid socket address found\n" );
@@ -158,17 +160,18 @@ int connection( int internet_socket )
 
 //-------------------------------------------------------------------------------
 
-void execution( int internet_socket,long int RandomNumber)
+void execution( int internet_socket,int RandomNumber)
 { 
-    long buffer;
+    //long buffer;
+	char buffer[50];
     uint32_t ClientNumber;
  	int number_of_bytes_send = 0;
 	int number_of_bytes_received = 0;
 
  while( 1 )
  {
-
-	number_of_bytes_received = recv( internet_socket, (char*) &buffer, sizeof(buffer), 0 );
+    number_of_bytes_received = 0;
+	number_of_bytes_received = recv( internet_socket, buffer, (sizeof buffer) -1, 0 );
 	if( number_of_bytes_received == -1 )
 	{
 		perror( "recv" );
@@ -179,18 +182,19 @@ void execution( int internet_socket,long int RandomNumber)
 		//printf( "Received : %ld\n", buffer );
 	}
 	
+	    ClientNumber = atol(buffer);
 	//---------TEST---------------------------------------
-	   printf("sizeof buffer : %d\n",sizeof(buffer));
-	   printf("voor ntohl    : %c\n",buffer);
-	   ClientNumber = ntohl(buffer);  
-	   printf("na ntohl      : %ld\n",ClientNumber);
-	   printf("random        : %ld\n",RandomNumber);
+	   printf("voor ntohl    : %d\n",ClientNumber);
+	   //ClientNumber = ntohl(ClientNumber);  
+	   printf("na ntohl      : %d\n",ClientNumber);
+	   printf("random        : %d\n",RandomNumber);
 	   printf("---------------------\n");
 	//---------TEST---------------------------------------
 		 
 		if(ClientNumber < RandomNumber)
 		{
-		  number_of_bytes_send = send( internet_socket, "Hoger!", 6, 0 );
+		  number_of_bytes_received = 0;
+		  number_of_bytes_send = send( internet_socket, "\nHoger!\n", 8, 0 );
 		  
 	      if( number_of_bytes_send == -1 )
 	       {
@@ -201,7 +205,8 @@ void execution( int internet_socket,long int RandomNumber)
 		
 		if(ClientNumber > RandomNumber)
 		{
-		  number_of_bytes_send = send( internet_socket, "Lager!", 6, 0 );
+		  number_of_bytes_received = 0;
+		  number_of_bytes_send = send( internet_socket, "\nLager!\n", 8, 0 );
 	      if( number_of_bytes_send == -1 )
 	       {
 		    perror( "send" );
@@ -211,7 +216,8 @@ void execution( int internet_socket,long int RandomNumber)
 	    }
 		if(ClientNumber == RandomNumber)
 		{
-		   number_of_bytes_send = send( internet_socket, "You Win!", 8, 0 );
+		   number_of_bytes_received = 0;
+		   number_of_bytes_send = send( internet_socket, "\nYou Win!\n", 10, 0 );
 		   if(number_of_bytes_send > 0)
 		   {
 			break;
@@ -224,7 +230,7 @@ void execution( int internet_socket,long int RandomNumber)
 		}
 	
   }
-   RandomNumber = 0;
+  
    ClientNumber = 0;
 }
 
