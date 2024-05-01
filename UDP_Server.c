@@ -197,56 +197,47 @@ void execution( int internet_socket , long int RandomNumber )
 	   FD_SET(internet_socket,&rfds);
 
 	 
-	   //Checken of er een bericht gestuurd is na de time-out --> "You Lost!".
-       if( (val1 == 0) && (number_of_bytes_received != 0) )
+	   //Checken of er een bericht gestuurd is na of tijdens de time-out --> "You Lost!".
+	   
+       if( (number_of_bytes_received != 0) )
 	   {
-	    number_of_bytes_received = 0;
+	    
 	    printf("%d", number_of_bytes_received);
 	    number_of_bytes_send = sendto( internet_socket, "You Lost!", 9, 0, (struct sockaddr *) &client_internet_address, client_internet_address_length );
 	    if( number_of_bytes_send == -1 )
 	    {
 		 perror( "sendto" );
 	    }
-		break;
-		i = 8 , val1 = 8;
-       }
-	 
-	   //bericht sturen "You Won?".
-	   if( (val2 == 0 ) && (number_of_bytes_received == 0) )
-	   {
-		number_of_bytes_received = 0;
-	    number_of_bytes_send = sendto( internet_socket, "You Won?", 8, 0, (struct sockaddr *) &client_internet_address, client_internet_address_length );
-	    if( number_of_bytes_send == -1 )
-	    {
-	     perror( "sendto" );
-	    }
-	   }
-	   //16 seconden time-out.
-	   tv.tv_sec = 16;
-       val2 = select(1,&rfds,NULL,NULL,&tv);
-       printf("val2 = %d\n",val2);
-	   if(val2 == -1)
-	   {
-		perror();
-	   }
-	
-	
-	   //Checken of bericht is gestuurd tijdens time-out --> "You Lost".
-	   if( (val2 > 0 ) && (number_of_bytes_received != 0) )
-	   {
-		number_of_bytes_received = 0;
-	    number_of_bytes_send = sendto( internet_socket, "You Lost!", 9, 0, (struct sockaddr *) &client_internet_address, client_internet_address_length );
-	    if( number_of_bytes_send == -1 )
-	    {
-		 perror( "sendto" );
-	    }
+		
+		//Resetten van val1 om terug te kunnen starten.
 		if(val2 == 0)
 		{
 		break;
 		i = 8 , val1 = 8;
 		}
        }
-	 
+	   
+	   //bericht sturen "You Won?".
+	   if( (val2 ==0) && (number_of_bytes_received == 0) )
+	   {
+		
+	    number_of_bytes_send = sendto( internet_socket, "You Won?", 8, 0, (struct sockaddr *) &client_internet_address, client_internet_address_length );
+	    if( number_of_bytes_send == -1 )
+	    {
+	     perror( "sendto" );
+	    }
+	   }
+	   
+	   //16 seconden time-out.
+	   tv.tv_sec = 16;
+       val2 = select(1,&rfds,NULL,NULL,&tv);
+    
+	   if(val2 == -1)
+	   {
+		perror();
+	   }
+	
+	
 	   //time-out is 0 en er is geen bericht gestuurd --> "You Won!".
 	   if( (val2 == 0) && (number_of_bytes_received == 0) )
 	   {
@@ -257,7 +248,8 @@ void execution( int internet_socket , long int RandomNumber )
 		 perror( "sendto" );
 	    }
 	    break;
-		i = 8 , val1 = 8;
+		
+		i = 8 , val1 = 8;  //Resetten van val1 om terug te kunnen starten.
 	   }
 	  
      }
