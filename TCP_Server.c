@@ -84,9 +84,9 @@ int initialization()
 	struct addrinfo internet_address_setup;
 	struct addrinfo * internet_address_result;
 	memset( &internet_address_setup, 0, sizeof internet_address_setup );
-	internet_address_setup.ai_family = AF_UNSPEC;
-	internet_address_setup.ai_socktype = SOCK_STREAM;
-	internet_address_setup.ai_flags = AI_PASSIVE;
+	internet_address_setup.ai_family = AF_UNSPEC; //IP4 or IP6 don't care
+	internet_address_setup.ai_socktype = SOCK_STREAM; //TCP
+	internet_address_setup.ai_flags = AI_PASSIVE; //fill in my ip
 	int getaddrinfo_return = getaddrinfo( NULL, "24042", &internet_address_setup, &internet_address_result );
 	if( getaddrinfo_return != 0 )
 	{
@@ -165,6 +165,7 @@ void execution( int internet_socket,int RandomNumber)
     //long buffer;
 	char buffer[50];
     uint32_t ClientNumber;
+	long receivedNumber = 0;
  	int number_of_bytes_send = 0;
 	int number_of_bytes_received = 0;
 
@@ -180,12 +181,15 @@ void execution( int internet_socket,int RandomNumber)
 	else
 	{
 		//printf( "Received : %ld\n", buffer );
+		buffer[number_of_bytes_received] = '\0';
+		receivedNumber = atol(buffer);
 	}
 	
-	    ClientNumber = atol(buffer);
+	    
 	//---------TEST---------------------------------------
-	   printf("voor ntohl    : %d\n",ClientNumber);
-	   //ClientNumber = ntohl(ClientNumber);  
+	   printf("voor ntohl    : %ld\n",receivedNumber);
+	   //ClientNumber = ntohl(receivedNumber);
+	   ClientNumber = receivedNumber;  
 	   printf("na ntohl      : %d\n",ClientNumber);
 	   printf("random        : %d\n",RandomNumber);
 	   printf("---------------------\n");
