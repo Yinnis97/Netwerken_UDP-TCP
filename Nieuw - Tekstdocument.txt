@@ -1,0 +1,3 @@
+-UDP : onthouden van hoogste gok (address) 
+-TCP :  number gen
+-TCP : RECV geeft niet de juist nummer
